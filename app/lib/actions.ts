@@ -49,3 +49,28 @@ export async function createInvoice(formData: FormData) {
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
 }
+
+const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+
+export async function updateInvoice(id: string, formData: FormData) {
+  const { amount, customerId, status } = UpdateInvoice.parse({
+    customerId: formData.get("customerId"),
+    amount: formData.get("amount"),
+    status: formData.get("status"),
+  });
+
+  const amountInCents = amount * 100;
+  try {
+    db.exec("BEGIN");
+    const invoiceDB = db.prepare(
+      "UPDATE invoices SET customer_id = ?, amount = ?, status = ? WHERE id = ?"
+    );
+    invoiceDB.run(customerId, amountInCents, status, id);
+    db.exec("COMMIT");
+  } catch (err: any) {
+    db.exec("ROLLBACK");
+    console.log("create invoice error", err.message);
+  }
+  revalidatePath("/dashboard/invoices");
+  redirect("/dashboard/invoices");
+}
