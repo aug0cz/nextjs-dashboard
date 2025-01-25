@@ -124,18 +124,18 @@ export async function fetchFilteredInvoices(
 
 export async function fetchInvoicesPages(query: string) {
   try {
-    const count = await sql`SELECT COUNT(*)
+    const count = db.prepare<unknown[], {length: string}>(`SELECT COUNT(*) as length
     FROM invoices
     JOIN customers ON invoices.customer_id = customers.id
     WHERE
-      customers.name ILIKE ${`%${query}%`} OR
-      customers.email ILIKE ${`%${query}%`} OR
-      invoices.amount::text ILIKE ${`%${query}%`} OR
-      invoices.date::text ILIKE ${`%${query}%`} OR
-      invoices.status ILIKE ${`%${query}%`}
-  `;
+      customers.name LIKE '${`%${query}%`}' OR
+      customers.email LIKE '${`%${query}%`}' OR
+      cast(invoices.amount AS TEXT) LIKE '${`%${query}%`}' OR
+      cast(invoices.date AS TEXT) LIKE '${`%${query}%`}' OR
+      invoices.status LIKE '${`%${query}%`}'
+  `).get();
 
-    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(Number(count?.length) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
