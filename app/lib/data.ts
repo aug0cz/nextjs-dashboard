@@ -94,7 +94,7 @@ export async function fetchFilteredInvoices(
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
-    const invoices = await sql<InvoicesTable>`
+    const invoices = db.prepare<any[],InvoicesTable>(`
       SELECT
         invoices.id,
         invoices.amount,
@@ -106,16 +106,16 @@ export async function fetchFilteredInvoices(
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
       WHERE
-        customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`} OR
-        invoices.amount::text ILIKE ${`%${query}%`} OR
-        invoices.date::text ILIKE ${`%${query}%`} OR
-        invoices.status ILIKE ${`%${query}%`}
+        customers.name LIKE '${`%${query}%`}' OR
+        customers.email LIKE '${`%${query}%`}' OR
+        cast(invoices.amount AS TEXT) LIKE '${`%${query}%`}' OR
+        invoices.date LIKE '${`%${query}%`}' OR
+        invoices.status LIKE '${`%${query}%`}'
       ORDER BY invoices.date DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-    `;
+    `).all();
 
-    return invoices.rows;
+    return invoices;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoices.');
