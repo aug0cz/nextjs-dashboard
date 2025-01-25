@@ -20,7 +20,7 @@ export async function fetchRevenue() {
     console.log('Fetching revenue data...');
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    const data = db.prepare<any[],Revenue>(`SELECT * FROM revenue`).all();
+    const data = db.prepare<Revenue[],Revenue>(`SELECT * FROM revenue`).all();
     // console.log(data);
     // console.log('Data fetch completed after 3 seconds.');
 
@@ -33,7 +33,7 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   try {
-    const data = db.prepare<any[],LatestInvoiceRaw>(`
+    const data = db.prepare<LatestInvoiceRaw[],LatestInvoiceRaw>(`
       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
