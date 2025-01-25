@@ -74,3 +74,16 @@ export async function updateInvoice(id: string, formData: FormData) {
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
 }
+
+export async function deleteInvoice(id: string) {
+  try {
+    db.exec("BEGIN");
+    const invoiceDB = db.prepare("DELETE FROM invoices WHERE id = ?");
+    invoiceDB.run(id);
+    db.exec("COMMIT");
+  } catch (err: any) {
+    db.exec("ROLLBACK");
+    console.log("delete invoice error", err.message);
+  }
+  revalidatePath("/dashboard/invoices");
+}
